@@ -91,6 +91,8 @@ public:
   template<typename Stream>
   void read(Stream& stream);
 
+  // Assign pre-serialized data from existing pointer
+  void assign_data(uint8_t *data_ptr, size_t len);
   //! Return the size of the serialized message
   uint32_t size() const;
 
@@ -98,6 +100,7 @@ private:
 
   std::string md5, datatype, msg_def, latching;
   bool typed;
+  bool use_dma;
 
   uint8_t *msgBuf;
   uint32_t msgBufUsed;
@@ -228,12 +231,14 @@ void ShapeShifter::read(Stream& stream)
   // stash this message in our buffer
   if (stream.getLength() > msgBufAlloc)
   {
-    delete[] msgBuf;
+    if (use_dma == false)
+      delete[] msgBuf;
     msgBuf = new uint8_t[stream.getLength()];
     msgBufAlloc = stream.getLength();
   }
   msgBufUsed = stream.getLength();
   memcpy(msgBuf, stream.getData(), stream.getLength());
+  use_dma = false;
 }
 
 } // namespace topic_tools

@@ -40,6 +40,7 @@ bool ShapeShifter::uses_old_API_ = false;
 
 ShapeShifter::ShapeShifter()
   :  typed(false),
+     use_dma(false),
      msgBuf(NULL),
      msgBufUsed(0),
      msgBufAlloc(0)
@@ -49,7 +50,7 @@ ShapeShifter::ShapeShifter()
 
 ShapeShifter::~ShapeShifter()
 {
-  if (msgBuf)
+  if (msgBuf && !use_dma)
     delete[] msgBuf;
   
   msgBuf = NULL;
@@ -91,3 +92,14 @@ uint32_t ShapeShifter::size() const
   return msgBufUsed;
 }
 
+void ShapeShifter::assign_data(uint8_t *data_ptr, size_t len)
+{
+  if (msgBufAlloc > 0)
+  {
+    delete[] msgBuf;
+    msgBufAlloc = 0;
+  }
+  msgBuf = data_ptr;
+  msgBufUsed = len;
+  use_dma = true;
+}
